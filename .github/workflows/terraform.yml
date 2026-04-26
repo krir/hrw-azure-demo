@@ -12,7 +12,6 @@ env:
 
 jobs:
 
-  # ── STAGE 1: VALIDATE ──────────────────────────────────────
   validate:
     name: "Validate"
     runs-on: ubuntu-latest
@@ -35,7 +34,6 @@ jobs:
         run: terraform validate
         working-directory: ${{ env.WORKING_DIR }}
 
-  # ── STAGE 2: PLAN ──────────────────────────────────────────
   plan:
     name: "Plan"
     needs: validate
@@ -63,7 +61,10 @@ jobs:
           ARM_TENANT_ID:       ${{ secrets.ARM_TENANT_ID }}
 
       - name: "Terraform Plan"
-        run: terraform plan -out=tfplan -input=false
+        run: |
+          terraform plan -out=tfplan -input=false \
+            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}"
         working-directory: ${{ env.WORKING_DIR }}
         env:
           ARM_CLIENT_ID:       ${{ secrets.ARM_CLIENT_ID }}
@@ -78,8 +79,6 @@ jobs:
           path: ${{ env.WORKING_DIR }}/tfplan
           retention-days: 1
 
-  # ── STAGE 3: APPLY ─────────────────────────────────────────
-  # Requires human approval via GitHub Environment "production"
   apply:
     name: "Apply"
     needs: plan
