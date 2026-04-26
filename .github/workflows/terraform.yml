@@ -13,8 +13,6 @@ env:
 jobs:
 
   # ── STAGE 1: VALIDATE ──────────────────────────────────────
-  # Runs on every push and pull request
-  # Catches syntax errors before anything touches Azure
   validate:
     name: "Validate"
     runs-on: ubuntu-latest
@@ -38,8 +36,6 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
 
   # ── STAGE 2: PLAN ──────────────────────────────────────────
-  # Shows exactly what WILL change before anything is touched
-  # The plan file is uploaded as an artifact for the approver to review
   plan:
     name: "Plan"
     needs: validate
@@ -52,7 +48,13 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: "Terraform Init"
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=hrw-tfstate-rg" \
+            -backend-config="storage_account_name=hrwtfstate" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=prod.terraform.tfstate" \
+            -backend-config="access_key=${{ secrets.ARM_ACCESS_KEY }}"
         working-directory: ${{ env.WORKING_DIR }}
         env:
           ARM_CLIENT_ID:       ${{ secrets.ARM_CLIENT_ID }}
@@ -77,9 +79,7 @@ jobs:
           retention-days: 1
 
   # ── STAGE 3: APPLY ─────────────────────────────────────────
-  # ONLY runs on push to main — NOT on pull requests
   # Requires human approval via GitHub Environment "production"
-  # This is your manual approval gate — nobody deploys without review
   apply:
     name: "Apply"
     needs: plan
@@ -94,7 +94,13 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: "Terraform Init"
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=hrw-tfstate-rg" \
+            -backend-config="storage_account_name=hrwtfstate" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=prod.terraform.tfstate" \
+            -backend-config="access_key=${{ secrets.ARM_ACCESS_KEY }}"
         working-directory: ${{ env.WORKING_DIR }}
         env:
           ARM_CLIENT_ID:       ${{ secrets.ARM_CLIENT_ID }}
