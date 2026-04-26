@@ -40,4 +40,7 @@ flagging accounts for deprovisioning, MFA review, or licence reclamation.
 Terraform · Azure Resource Manager · GitHub Actions · PowerShell · MS Graph API · Entra ID
 
 ---
+## Status
+![CI/CD](https://github.com/krir/hrw-azure-demo/actions/workflows/terraform.yml/badge.svg)
+
 *Built by Kennedy K. Korir — April 2026*
