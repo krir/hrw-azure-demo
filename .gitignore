@@ -1,0 +1,18 @@
+# Terraform — never commit state or real credentials
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.tfplan
+
+# Reports with real user data
+*.csv
+
+# Secrets
+.env
+*.pem
+*.key
+
+# VS Code
+.vscode/
